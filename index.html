@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>11번가 카드 생성기</title>
+  <link rel="stylesheet" href="resources/globals.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard-SemiBold', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #121212;
+    }
+    .input-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 0 auto 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+    .input-section h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .input-section .desc {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 16px;
+    }
+    .excel-table-wrap {
+      overflow-x: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 1400px;
+    }
+    .excel-table th {
+      background: #f1f1f1;
+      border: 1px solid #ddd;
+      padding: 8px 6px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .excel-table td {
+      border: 1px solid #e8e8e8;
+      padding: 0;
+      height: 34px;
+      vertical-align: middle;
+    }
+    .excel-table td input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      background: transparent;
+    }
+    .excel-table td input:focus {
+      background: #fffde7;
+      box-shadow: inset 0 0 0 2px #4a90e2;
+    }
+    .excel-table td input[type="file"] {
+      padding: 4px 4px;
+      font-size: 11px;
+    }
+    .excel-table .row-num {
+      background: #f9f9f9;
+      text-align: center;
+      font-weight: 600;
+      color: #666;
+      width: 36px;
+      padding: 0 4px;
+    }
+    .excel-table .row-num span {
+      display: block;
+      padding: 6px 0;
+      font-size: 11px;
+    }
+    .btn-group {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary {
+      background: linear-gradient(90deg, #ff5a2e, #ff0038, #ff00ef);
+      color: #fff;
+    }
+    .btn-outline {
+      background: #fff;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+    .btn-danger {
+      background: #ff4444;
+      color: #fff;
+    }
+    .btn-dark {
+      background: #121212;
+      color: #fff;
+    }
+    .output-section {
+      margin: 0 auto;
+    }
+    .output-section h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #333;
+      text-align: center;
+    }
+    .output-actions {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .cards-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    /* 카드 래퍼 - 호버 다운로드 버튼 */
+    .card-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .card-wrap .btn-dl-single {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 100;
+      padding: 6px 12px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .card-wrap:hover .btn-dl-single {
+      display: block;
+    }
+    .card-wrap .btn-dl-single:hover {
+      background: rgba(0,0,0,0.9);
+    }
+    /* ===== 카드 스타일 (원본 style.css 기반 정밀 매칭) ===== */
+    .card {
+      background-color: #f7f6f4;
+      width: 425px;
+      height: 783px;
+      position: relative;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .card .card-thumbnail {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 425px;
+      height: 471px;
+      object-fit: cover;
+    }
+    /* 번호 배지 - 좌상단 */
+    .card .NO-wrapper {
+      display: flex;
+      width: 70px;
+      height: 70px;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: linear-gradient(90deg, rgba(255,90,46,1) 0%, rgba(255,0,56,1) 52%, rgba(255,0,239,1) 100%);
+      z-index: 10;
+    }
+    .card .NO-wrapper .NO {
+      font-family: "Pretendard-Bold", Helvetica;
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 36px;
+      text-align: center;
+      letter-spacing: 0;
+      line-height: 25px;
+      white-space: nowrap;
+    }
+    /* 로고 - 우상단 */
+    .card .logo-odp-simbol {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 70px;
+      display: flex;
+      padding: 20px 7px;
+      align-items: flex-end;
+      min-width: 97px;
+      z-index: 10;
+    }
+    .card .logo-odp-simbol .sx-b {
+      width: 83px;
+      height: 29px;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+    /* 동그라미 이미지 - 썸네일 우하단 */
+    .card .group-2 {
+      position: absolute;
+      top: 325px;
+      left: 279px;
+      width: 130px;
+      height: 130px;
+      z-index: 5;
+    }
+    /* 컬러 dot - 좌측, 썸네일 영역 좌하단 */
+    .card .frame-9 {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      position: absolute;
+      left: 20px;
+      top: 430px;
+      z-index: 5;
+    }
+    .card .frame-9 .color-circle {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.6);
+    }
+    /* 하단 흰색 영역 - 높이 312px (783-471) */
+    .card .bt {
+      display: flex;
+      flex-direction: column;
+      width: 425px;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 30px 20px;
+      position: absolute;
+      left: 0;
+      top: 471px;
+      height: 312px;
+      background-color: #ffffff;
+      z-index: 5;
+    }
+    .card .frame {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    .card .name {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 23px;
+    }
+    .card .group {
+      position: relative;
+      width: 319px;
+      height: 48px;
+    }
+    .card .text-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #121212;
+      font-size: 21px;
+      letter-spacing: 0;
+      line-height: normal;
+      white-space: nowrap;
+    }
+    .card .div {
+      position: absolute;
+      top: 27px;
+      left: 0;
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #121212;
+      font-size: 29px;
+      letter-spacing: 0;
+      line-height: normal;
+      white-space: nowrap;
+    }
+    /* 컬러/사이즈 영역 */
+    .card .frame-2 {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 29px;
+    }
+    .card .text-wrapper-2 {
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #4d4d4d;
+      font-size: 17px;
+      letter-spacing: 0;
+      line-height: 25px;
+      white-space: nowrap;
+      min-width: 45px;
+    }
+    .card .frame-3 {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0px;
+    }
+    .card .text-wrapper-3,
+    .card .p-text {
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #4d4d4d;
+      font-size: 17px;
+      letter-spacing: 0;
+      line-height: 25px;
+      white-space: nowrap;
+    }
+    /* 가격 영역 */
+    .card .frame-4 {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 30px 0px 0px;
+    }
+    .card .sale {
+      display: flex;
+      width: 385px;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .card .text-wrapper-4 {
+      font-family: "Pretendard-Bold", Helvetica;
+      font-weight: 700;
+      color: #f30d3f;
+      font-size: 50px;
+      letter-spacing: -2.5px;
+      line-height: 1;
+    }
+    .card .frame-5 {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 0px 10px 0px 0px;
+    }
+    .card .frame-6 {
+      display: inline-flex;
+      align-items: baseline;
+    }
+    .card .text-wrapper-5 {
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #b5b5b6;
+      font-size: 24px;
+      text-align: right;
+      letter-spacing: -0.72px;
+      line-height: 1;
+      text-decoration: line-through;
+    }
+    .card .frame-7 {
+      display: inline-flex;
+      align-items: baseline;
+    }
+    .card .text-wrapper-6 {
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #121212;
+      font-size: 33px;
+      text-align: right;
+      letter-spacing: -0.99px;
+      line-height: 1;
+    }
+    .card .text-wrapper-7 {
+      font-family: "Pretendard-SemiBold", Helvetica;
+      font-weight: 600;
+      color: #121212;
+      font-size: 24px;
+      text-align: right;
+      letter-spacing: -0.72px;
+      line-height: 1;
+    }
+    /* 최종혜택가 바 */
+    .card .price {
+      position: relative;
+      width: 385px;
+      height: 46px;
+    }
+    .card .mask-group {
+      position: absolute;
+      top: 0;
+      left: 164px;
+      width: 221px;
+      height: 46px;
+    }
+    .card .mask-group-2 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 164px;
+      height: 46px;
+    }
+    .card .frame-8 {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      position: absolute;
+      top: 6px;
+      right: 10px;
+    }
+    .card .text-wrapper-8 {
+      font-family: "Pretendard-Bold", Helvetica;
+      font-weight: 700;
+      color: #f30d3f;
+      font-size: 33px;
+      text-align: right;
+      letter-spacing: -0.66px;
+      line-height: 1;
+    }
+    .card .text-wrapper-9 {
+      font-family: "Pretendard-Bold", Helvetica;
+      font-weight: 700;
+      color: #f30d3f;
+      font-size: 24px;
+      text-align: right;
+      letter-spacing: -0.48px;
+      line-height: 1;
+    }
+    .card .text-wrapper-10 {
+      position: absolute;
+      top: 12px;
+      left: 20px;
+      font-family: "Pretendard-Bold", Helvetica;
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 25px;
+      letter-spacing: -0.75px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>11번가 카드 생성기</h1>
+
+  <!-- 엑셀형 입력 영역 -->
+  <div class="input-section">
+    <h2>카드 정보 입력 (엑셀 형태)</h2>
+    <p class="desc">
+      💡 엑셀에서 복사(Ctrl+C)한 데이터를 셀에 붙여넣기(Ctrl+V)하면 자동으로 채워집니다. 
+      탭(Tab)으로 구분된 여러 행/열 데이터를 한번에 붙여넣을 수 있습니다.
+      이미지는 파일 선택으로 개별 등록합니다.
+    </p>
+    <div class="excel-table-wrap">
+      <table class="excel-table" id="excel-table">
+        <thead>
+          <tr>
+            <th style="width:36px"></th>
+            <th style="width:50px">번호</th>
+            <th style="width:130px">썸네일 이미지</th>
+            <th style="width:130px">동그라미 이미지</th>
+            <th style="width:90px">컬러코드</th>
+            <th style="width:120px">품번</th>
+            <th style="width:180px">상품명</th>
+            <th style="width:140px">컬러명</th>
+            <th style="width:160px">사이즈</th>
+            <th style="width:70px">할인률(%)</th>
+            <th style="width:90px">정상가</th>
+            <th style="width:90px">할인가</th>
+            <th style="width:90px">최종혜택가</th>
+          </tr>
+        </thead>
+        <tbody id="excel-body">
+        </tbody>
+      </table>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generateCards()">카드 생성</button>
+      <button class="btn btn-outline" onclick="addRows(1)">1행 추가</button>
+      <button class="btn btn-outline" onclick="addRows(5)">5행 추가</button>
+      <button class="btn btn-danger" onclick="clearAll()">전체 초기화</button>
+    </div>
+  </div>
+  <!-- 카드 출력 영역 -->
+  <div class="output-section" id="output-section" style="display:none;">
+    <h2>생성된 카드 미리보기 (<span id="card-count">0</span>개)</h2>
+    <div class="output-actions">
+      <button class="btn btn-dark" onclick="downloadAllCards()">전체 카드 다운로드 (PNG)</button>
+    </div>
+    <div class="cards-grid" id="cards-grid">
+    </div>
+  </div>
+
+  <!-- html2canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    const COLUMNS = ['number','thumbnail','circle','colorCode','productCode','productName','colorName','size','discount','originalPrice','salePrice','finalPrice'];
+    const TEXT_COLUMNS = ['number','colorCode','productCode','productName','colorName','size','discount','originalPrice','salePrice','finalPrice'];
+    const FILE_COLUMNS = ['thumbnail','circle'];
+
+    let rowCount = 0;
+    // 이미지 blob URL (CORS 우회용)
+    let logoB64 = 'resources/img/outdoorproducts-original-logo-1.png';
+    let maskRB64 = 'resources/img/mask-group.png';
+    let maskLB64 = 'resources/img/mask-group-1.png';
+
+    async function fileToDataURL(path) {
+      try {
+        const res = await fetch(path);
+        const blob = await res.blob();
+        return new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.readAsDataURL(blob);
+        });
+      } catch(e) {
+        return path;
+      }
+    }
+
+    async function initImages() {
+      logoB64  = await fileToDataURL('resources/img/outdoorproducts-original-logo-1.png');
+      maskRB64 = await fileToDataURL('resources/img/mask-group.png');
+      maskLB64 = await fileToDataURL('resources/img/mask-group-1.png');
+    }
+    initImages();
+
+    function createRow() {
+      rowCount++;
+      const tr = document.createElement('tr');
+      tr.dataset.row = rowCount;
+
+      const tdNum = document.createElement('td');
+      tdNum.className = 'row-num';
+      tdNum.innerHTML = `<span>${rowCount}</span>`;
+      tr.appendChild(tdNum);
+
+      COLUMNS.forEach(col => {
+        const td = document.createElement('td');
+        if (FILE_COLUMNS.includes(col)) {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.dataset.col = col;
+          td.appendChild(input);
+        } else {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.dataset.col = col;
+          if (col === 'number') input.value = rowCount;
+          if (col === 'colorCode') input.placeholder = '#000000';
+          if (col === 'discount') input.placeholder = '45';
+          if (col === 'originalPrice') input.placeholder = '35000';
+          if (col === 'salePrice') input.placeholder = '24000';
+          if (col === 'finalPrice') input.placeholder = '19200';
+          if (col === 'productCode') input.placeholder = 'OD262ISS04';
+          if (col === 'productName') input.placeholder = '상품명';
+          if (col === 'colorName') input.placeholder = '블루 / 아이보리';
+          if (col === 'size') input.placeholder = '130 / 145 / 155';
+          input.addEventListener('paste', handlePaste);
+          td.appendChild(input);
+        }
+        tr.appendChild(td);
+      });
+      return tr;
+    }
+    function addRows(count) {
+      const tbody = document.getElementById('excel-body');
+      for (let i = 0; i < count; i++) {
+        tbody.appendChild(createRow());
+      }
+    }
+
+    function clearAll() {
+      if (!confirm('모든 입력 데이터를 초기화하시겠습니까?')) return;
+      rowCount = 0;
+      document.getElementById('excel-body').innerHTML = '';
+      addRows(3);
+      document.getElementById('output-section').style.display = 'none';
+      document.getElementById('cards-grid').innerHTML = '';
+    }
+
+    function handlePaste(e) {
+      const clipboardData = e.clipboardData || window.clipboardData;
+      const pastedText = clipboardData.getData('text');
+      if (pastedText.includes('\t') || pastedText.includes('\n')) {
+        e.preventDefault();
+        const rows = pastedText.split(/\r?\n/).filter(row => row.trim() !== '');
+        const startCell = e.target;
+        const startTr = startCell.closest('tr');
+        const startColIndex = getTextColumnIndex(startCell.dataset.col);
+        const tbody = document.getElementById('excel-body');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        let startRowIndex = allRows.indexOf(startTr);
+
+        const neededRows = startRowIndex + rows.length;
+        while (allRows.length < neededRows) {
+          const newRow = createRow();
+          tbody.appendChild(newRow);
+          allRows.push(newRow);
+        }
+
+        rows.forEach((rowData, rIdx) => {
+          const cells = rowData.split('\t');
+          const targetRow = allRows[startRowIndex + rIdx];
+          if (!targetRow) return;
+          cells.forEach((cellValue, cIdx) => {
+            const targetColIdx = startColIndex + cIdx;
+            if (targetColIdx >= TEXT_COLUMNS.length) return;
+            const targetCol = TEXT_COLUMNS[targetColIdx];
+            const input = targetRow.querySelector(`input[data-col="${targetCol}"]`);
+            if (input) input.value = cellValue.trim();
+          });
+        });
+      }
+    }
+
+    function getTextColumnIndex(colName) {
+      return TEXT_COLUMNS.indexOf(colName);
+    }
+    function formatPrice(num) {
+      const n = parseInt(String(num).replace(/[^0-9]/g, ''));
+      if (isNaN(n)) return '0';
+      return n.toLocaleString('ko-KR');
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve) => {
+        if (!file) { resolve(''); return; }
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function generateCards() {
+      const tbody = document.getElementById('excel-body');
+      const rows = tbody.querySelectorAll('tr');
+      const cardData = [];
+
+      for (const row of rows) {
+        const productCode = row.querySelector('input[data-col="productCode"]')?.value.trim();
+        const productName = row.querySelector('input[data-col="productName"]')?.value.trim();
+        if (!productCode && !productName) continue;
+
+        const thumbnailInput = row.querySelector('input[data-col="thumbnail"]');
+        const circleInput = row.querySelector('input[data-col="circle"]');
+        const thumbnail = await readFileAsDataURL(thumbnailInput?.files?.[0]);
+        const circle = await readFileAsDataURL(circleInput?.files?.[0]);
+
+        cardData.push({
+          number: row.querySelector('input[data-col="number"]')?.value.trim() || '',
+          thumbnail,
+          circle,
+          colorCode: row.querySelector('input[data-col="colorCode"]')?.value.trim() || '#000000',
+          productCode,
+          productName: productName || '',
+          colorName: row.querySelector('input[data-col="colorName"]')?.value.trim() || '',
+          size: row.querySelector('input[data-col="size"]')?.value.trim() || '',
+          discount: row.querySelector('input[data-col="discount"]')?.value.trim() || '0',
+          originalPrice: row.querySelector('input[data-col="originalPrice"]')?.value.trim() || '0',
+          salePrice: row.querySelector('input[data-col="salePrice"]')?.value.trim() || '0',
+          finalPrice: row.querySelector('input[data-col="finalPrice"]')?.value.trim() || '0',
+        });
+      }
+
+      if (cardData.length === 0) {
+        alert('생성할 카드 데이터가 없습니다. 품번 또는 상품명을 입력해주세요.');
+        return;
+      }
+      renderCards(cardData);
+    }
+    function renderCards(cardData) {
+      const grid = document.getElementById('cards-grid');
+      grid.innerHTML = '';
+      document.getElementById('card-count').textContent = cardData.length;
+      document.getElementById('output-section').style.display = 'block';
+
+      cardData.forEach((card, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'card-wrap';
+
+        const btn = document.createElement('button');
+        btn.className = 'btn-dl-single';
+        btn.textContent = '⬇ 다운로드';
+        btn.onclick = () => downloadCard(i);
+        wrap.appendChild(btn);
+
+        const cardEl = document.createElement('div');
+        cardEl.className = 'card';
+        cardEl.id = 'card-' + i;
+
+        cardEl.innerHTML = `
+          ${card.thumbnail 
+            ? '<img class="card-thumbnail" src="'+card.thumbnail+'" />' 
+            : '<div class="card-thumbnail" style="background:#ddd;width:425px;height:783px;"></div>'}
+
+          <div class="NO-wrapper"><div class="NO">${card.number}</div></div>
+
+          <div class="logo-odp-simbol"><div class="sx-b" style="background-image:url(${logoB64})"></div></div>
+
+          ${card.circle 
+            ? '<img class="group-2" src="'+card.circle+'" />' 
+            : ''}
+
+          <div class="frame-9">
+            <div class="color-circle" style="background:${card.colorCode}"></div>
+          </div>
+
+          <div class="bt">
+            <div class="frame">
+              <div class="name">
+                <div class="group">
+                  <div class="text-wrapper">${card.productCode}</div>
+                  <div class="div">${card.productName}</div>
+                </div>
+                <div class="frame-2">
+                  <div class="text-wrapper-2">컬러<br/>사이즈</div>
+                  <div class="frame-3">
+                    <div class="text-wrapper-3">${card.colorName}</div>
+                    <div class="p-text">${card.size}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="frame-4">
+                <div class="sale">
+                  <div class="text-wrapper-4">${card.discount}%</div>
+                  <div class="frame-5">
+                    <div class="frame-6">
+                      <div class="text-wrapper-5">${formatPrice(card.originalPrice)}</div>
+                      <div class="text-wrapper-5">원</div>
+                    </div>
+                    <div class="frame-7">
+                      <div class="text-wrapper-6">&nbsp;&nbsp;${formatPrice(card.salePrice)}</div>
+                      <div class="text-wrapper-7">원</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="price">
+                  <img class="mask-group" src="${maskRB64}" />
+                  <img class="mask-group-2" src="${maskLB64}" />
+                  <div class="frame-8">
+                    <div class="text-wrapper-8">&nbsp;&nbsp;${formatPrice(card.finalPrice)}</div>
+                    <div class="text-wrapper-9">원</div>
+                  </div>
+                  <div class="text-wrapper-10">최종혜택가</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(cardEl);
+        wrap.appendChild(cardEl);
+        grid.appendChild(wrap);
+      });
+
+      document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
+    }
+    async function downloadCard(i) {
+      const el = document.getElementById('card-' + i);
+      if (!el) return;
+      try {
+        const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#f7f6f4' });
+        const numEl = el.querySelector('.NO');
+        const codeEl = el.querySelector('.text-wrapper');
+        const num = numEl ? numEl.textContent.trim() : i+1;
+        const code = codeEl ? codeEl.textContent.trim() : 'card';
+        const link = document.createElement('a');
+        link.download = `card_${num}_${code}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch(err) {
+        alert('다운로드 실패: ' + err.message);
+      }
+    }
+
+    async function downloadAllCards() {
+      const cards = document.querySelectorAll('.card');
+      if (cards.length === 0) { alert('생성된 카드가 없습니다.'); return; }
+      for (let i = 0; i < cards.length; i++) {
+        await downloadCard(i);
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+
+    // 초기 3행 생성
+    addRows(3);
+  </script>
+</body>
+</html>
