@@ -582,6 +582,7 @@
           input.type = 'file';
           input.accept = 'image/*';
           input.dataset.col = col;
+          input.addEventListener('change', () => liveUpdate());
           td.appendChild(input);
         } else {
           const input = document.createElement('input');
@@ -599,6 +600,7 @@
           if (col === 'size') input.placeholder = '130 / 145 / 155';
           input.addEventListener('paste', handlePaste);
           input.addEventListener('keydown', handleArrowKey);
+          input.addEventListener('input', () => liveUpdate());
           td.appendChild(input);
         }
         tr.appendChild(td);
@@ -668,6 +670,7 @@
             if (input) input.value = cellValue.trim();
           });
         });
+        liveUpdate();
       }
     }
 
@@ -691,41 +694,49 @@
     }
 
     async function generateCards() {
-      const tbody = document.getElementById('excel-body');
-      const rows = tbody.querySelectorAll('tr');
-      const cardData = [];
+      await liveUpdate();
+    }
 
-      for (const row of rows) {
-        const productCode = row.querySelector('input[data-col="productCode"]')?.value.trim();
-        const productName = row.querySelector('input[data-col="productName"]')?.value.trim();
-        if (!productCode && !productName) continue;
+    let liveTimer = null;
+    async function liveUpdate() {
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(async () => {
+        const tbody = document.getElementById('excel-body');
+        const rows = tbody.querySelectorAll('tr');
+        const cardData = [];
 
-        const thumbnailInput = row.querySelector('input[data-col="thumbnail"]');
-        const circleInput = row.querySelector('input[data-col="circle"]');
-        const thumbnail = await readFileAsDataURL(thumbnailInput?.files?.[0]);
-        const circle = await readFileAsDataURL(circleInput?.files?.[0]);
+        for (const row of rows) {
+          const productCode = row.querySelector('input[data-col="productCode"]')?.value.trim();
+          const productName = row.querySelector('input[data-col="productName"]')?.value.trim();
+          if (!productCode && !productName) continue;
 
-        cardData.push({
-          number: row.querySelector('input[data-col="number"]')?.value.trim() || '',
-          thumbnail,
-          circle,
-          colorCode: row.querySelector('input[data-col="colorCode"]')?.value.trim() || '#000000',
-          productCode,
-          productName: productName || '',
-          colorName: row.querySelector('input[data-col="colorName"]')?.value.trim() || '',
-          size: row.querySelector('input[data-col="size"]')?.value.trim() || '',
-          discount: row.querySelector('input[data-col="discount"]')?.value.trim() || '0',
-          originalPrice: row.querySelector('input[data-col="originalPrice"]')?.value.trim() || '0',
-          salePrice: row.querySelector('input[data-col="salePrice"]')?.value.trim() || '0',
-          finalPrice: row.querySelector('input[data-col="finalPrice"]')?.value.trim() || '0',
-        });
-      }
+          const thumbnailInput = row.querySelector('input[data-col="thumbnail"]');
+          const circleInput = row.querySelector('input[data-col="circle"]');
+          const thumbnail = await readFileAsDataURL(thumbnailInput?.files?.[0]);
+          const circle = await readFileAsDataURL(circleInput?.files?.[0]);
 
-      if (cardData.length === 0) {
-        alert('생성할 카드 데이터가 없습니다. 품번 또는 상품명을 입력해주세요.');
-        return;
-      }
-      renderCards(cardData);
+          cardData.push({
+            number: row.querySelector('input[data-col="number"]')?.value.trim() || '',
+            thumbnail,
+            circle,
+            colorCode: row.querySelector('input[data-col="colorCode"]')?.value.trim() || '',
+            productCode: productCode || '',
+            productName: productName || '',
+            colorName: row.querySelector('input[data-col="colorName"]')?.value.trim() || '',
+            size: row.querySelector('input[data-col="size"]')?.value.trim() || '',
+            discount: row.querySelector('input[data-col="discount"]')?.value.trim() || '0',
+            originalPrice: row.querySelector('input[data-col="originalPrice"]')?.value.trim() || '0',
+            salePrice: row.querySelector('input[data-col="salePrice"]')?.value.trim() || '0',
+            finalPrice: row.querySelector('input[data-col="finalPrice"]')?.value.trim() || '0',
+          });
+        }
+
+        if (cardData.length === 0) {
+          document.getElementById('output-section').style.display = 'none';
+          return;
+        }
+        renderCards(cardData);
+      }, 300);
     }
     function renderCards(cardData) {
       const grid = document.getElementById('cards-grid');
