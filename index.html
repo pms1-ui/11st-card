@@ -708,26 +708,40 @@
         for (const row of rows) {
           const productCode = row.querySelector('input[data-col="productCode"]')?.value.trim();
           const productName = row.querySelector('input[data-col="productName"]')?.value.trim();
-          if (!productCode && !productName) continue;
-
+          const colorCode   = row.querySelector('input[data-col="colorCode"]')?.value.trim();
+          const colorName   = row.querySelector('input[data-col="colorName"]')?.value.trim();
+          const size        = row.querySelector('input[data-col="size"]')?.value.trim();
+          const discount    = row.querySelector('input[data-col="discount"]')?.value.trim();
+          const origPrice   = row.querySelector('input[data-col="originalPrice"]')?.value.trim();
+          const salePrice   = row.querySelector('input[data-col="salePrice"]')?.value.trim();
+          const finalPrice  = row.querySelector('input[data-col="finalPrice"]')?.value.trim();
           const thumbnailInput = row.querySelector('input[data-col="thumbnail"]');
-          const circleInput = row.querySelector('input[data-col="circle"]');
-          const thumbnail = await readFileAsDataURL(thumbnailInput?.files?.[0]);
-          const circle = await readFileAsDataURL(circleInput?.files?.[0]);
+          const circleInput    = row.querySelector('input[data-col="circle"]');
+          const hasThumbnail   = thumbnailInput?.files?.[0];
+          const hasCircle      = circleInput?.files?.[0];
+
+          // 어떤 필드든 하나라도 입력/업로드되면 카드 표시
+          const hasAny = productCode || productName || colorCode || colorName ||
+                         size || discount || origPrice || salePrice || finalPrice ||
+                         hasThumbnail || hasCircle;
+          if (!hasAny) continue;
+
+          const thumbnail = await readFileAsDataURL(hasThumbnail);
+          const circle    = await readFileAsDataURL(hasCircle);
 
           cardData.push({
             number: row.querySelector('input[data-col="number"]')?.value.trim() || '',
             thumbnail,
             circle,
-            colorCode: row.querySelector('input[data-col="colorCode"]')?.value.trim() || '',
+            colorCode: colorCode || '',
             productCode: productCode || '',
             productName: productName || '',
-            colorName: row.querySelector('input[data-col="colorName"]')?.value.trim() || '',
-            size: row.querySelector('input[data-col="size"]')?.value.trim() || '',
-            discount: row.querySelector('input[data-col="discount"]')?.value.trim() || '0',
-            originalPrice: row.querySelector('input[data-col="originalPrice"]')?.value.trim() || '0',
-            salePrice: row.querySelector('input[data-col="salePrice"]')?.value.trim() || '0',
-            finalPrice: row.querySelector('input[data-col="finalPrice"]')?.value.trim() || '0',
+            colorName: colorName || '',
+            size: size || '',
+            discount: discount || '0',
+            originalPrice: origPrice || '0',
+            salePrice: salePrice || '0',
+            finalPrice: finalPrice || '0',
           });
         }
 
