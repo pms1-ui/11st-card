@@ -487,6 +487,7 @@
     <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#555;line-height:1.7;">
       ⚠️ <strong>이미지 규격 안내</strong><br/>
       · <strong>썸네일 이미지</strong>: <strong>425 × 471px</strong> 고정 (세로 471px 초과 시 하단 정보 영역과 겹칩니다)<br/>
+      · <strong>컬러코드</strong>: # 없이 6자리 HEX, 여러 개는 쉼표로 구분 (예: <code>FF0038,3FD768</code>) — 먼저 입력한 색이 위에 표시<br/>
       · <strong>동그라미 이미지</strong>: 130 × 130px 정사각형 권장 (자동 원형 표시)<br/>
       · <strong>최종 산출물 카드 크기</strong>: <strong>425 × 783px</strong> PNG
     </div>
@@ -498,7 +499,7 @@
             <th style="width:50px">번호</th>
             <th style="width:130px">썸네일 이미지</th>
             <th style="width:130px">동그라미 이미지</th>
-            <th style="width:90px">컬러코드</th>
+            <th style="width:90px">컬러코드<br/><small>(쉼표 구분)</small></th>
             <th style="width:120px">품번</th>
             <th style="width:180px">상품명</th>
             <th style="width:140px">컬러명</th>
@@ -587,7 +588,7 @@
           input.type = 'text';
           input.dataset.col = col;
           if (col === 'number') input.value = rowCount;
-          if (col === 'colorCode') input.placeholder = '#000000';
+          if (col === 'colorCode') input.placeholder = 'FF0038,3FD768';
           if (col === 'discount') input.placeholder = '45';
           if (col === 'originalPrice') input.placeholder = '35000';
           if (col === 'salePrice') input.placeholder = '24000';
@@ -744,7 +745,11 @@
             : ''}
 
           <div class="frame-9">
-            <div class="color-circle" style="background:${card.colorCode}"></div>
+            ${card.colorCode
+              ? card.colorCode.split(',').map(c => c.trim()).filter(Boolean).reverse().map(c =>
+                  `<div class="color-circle" style="background:#${c}"></div>`
+                ).join('')
+              : ''}
           </div>
 
           <div class="bt">
