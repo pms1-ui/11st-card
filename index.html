@@ -247,12 +247,12 @@
     /* 컬러 dot - 좌측, 썸네일 영역 좌하단 */
     .card .frame-9 {
       display: inline-flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
       position: absolute;
       left: 20px;
-      top: 430px;
+      bottom: 312px;
       z-index: 5;
     }
     .card .frame-9 .color-circle {
@@ -746,7 +746,7 @@
 
           <div class="frame-9">
             ${card.colorCode
-              ? card.colorCode.split(',').map(c => c.trim()).filter(Boolean).reverse().map(c =>
+              ? card.colorCode.split(',').map(c => c.trim()).filter(Boolean).map(c =>
                   `<div class="color-circle" style="background:#${c}"></div>`
                 ).join('')
               : ''}
