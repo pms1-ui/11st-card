@@ -598,6 +598,7 @@
           if (col === 'colorName') input.placeholder = '블루 / 아이보리';
           if (col === 'size') input.placeholder = '130 / 145 / 155';
           input.addEventListener('paste', handlePaste);
+          input.addEventListener('keydown', handleArrowKey);
           td.appendChild(input);
         }
         tr.appendChild(td);
@@ -618,6 +619,21 @@
       addRows(3);
       document.getElementById('output-section').style.display = 'none';
       document.getElementById('cards-grid').innerHTML = '';
+    }
+
+    function handleArrowKey(e) {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      const input = e.target;
+      const col = input.dataset.col;
+      const tbody = document.getElementById('excel-body');
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      const currentRow = input.closest('tr');
+      const currentIdx = allRows.indexOf(currentRow);
+      const targetIdx = e.key === 'ArrowDown' ? currentIdx + 1 : currentIdx - 1;
+      if (targetIdx < 0 || targetIdx >= allRows.length) return;
+      const targetInput = allRows[targetIdx].querySelector(`input[data-col="${col}"]`);
+      if (targetInput) targetInput.focus();
     }
 
     function handlePaste(e) {
