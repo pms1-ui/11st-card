@@ -483,9 +483,9 @@
   <div class="input-section">
     <h2>카드 정보 입력 (엑셀 형태)</h2>
     <p class="desc">
-      💡 엑셀에서 복사(Ctrl+C)한 데이터를 셀에 붙여넣기(Ctrl+V)하면 자동으로 채워집니다. 
-      탭(Tab)으로 구분된 여러 행/열 데이터를 한번에 붙여넣을 수 있습니다.
-      이미지는 파일 선택으로 개별 등록합니다.
+      💡 엑셀에서 복사(Ctrl+C)한 데이터를 셀에 붙여넣기(Ctrl+V)하면 자동으로 채워집니다.<br/>
+      탭(Tab)으로 구분된 여러 행/열 데이터를 한번에 붙여넣을 수 있습니다.<br/>
+      이미지는 파일 선택으로 개별 등록 가능합니다 (드래그앤드롭 가능)
     </p>
     <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#555;line-height:1.7;">
       ⚠️ <strong>이미지 규격 안내</strong><br/>
@@ -586,7 +586,26 @@
           input.accept = 'image/*';
           input.dataset.col = col;
           input.addEventListener('change', () => liveUpdate());
-          td.appendChild(input);
+
+          // 드래그앤드롭 래퍼
+          const dropZone = document.createElement('div');
+          dropZone.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+          dropZone.appendChild(input);
+
+          dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.background = '#e3f2fd'; });
+          dropZone.addEventListener('dragleave', () => { dropZone.style.background = ''; });
+          dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.style.background = '';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              input.files = dt.files;
+              liveUpdate();
+            }
+          });
+          td.appendChild(dropZone);
         } else {
           const input = document.createElement('input');
           input.type = 'text';
@@ -603,7 +622,17 @@
           if (col === 'size') input.placeholder = '130 / 145 / 155';
           input.addEventListener('paste', handlePaste);
           input.addEventListener('keydown', handleArrowKey);
-          input.addEventListener('input', () => liveUpdate());
+          input.addEventListener('input', () => {
+            // 입력 제한 처리
+            if (col === 'colorCode') {
+              input.value = input.value.toUpperCase().replace(/[^0-9A-F,]/g, '');
+            } else if (col === 'productCode') {
+              input.value = input.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+            } else if (col === 'discount' || col === 'originalPrice' || col === 'salePrice' || col === 'finalPrice') {
+              input.value = input.value.replace(/[^0-9]/g, '');
+            }
+            liveUpdate();
+          });
           td.appendChild(input);
         }
         tr.appendChild(td);
