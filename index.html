@@ -785,11 +785,12 @@
       }, 300);
     }
     function renderCards(cardData) {
+      const scrollY = window.scrollY;
+      document.getElementById('output-section').style.display = 'block';
+      document.getElementById('card-count').textContent = cardData.length;
+
       const grid = document.getElementById('cards-grid');
       grid.innerHTML = '';
-      document.getElementById('card-count').textContent = cardData.length;
-      document.getElementById('output-section').style.display = 'block';
-
       cardData.forEach((card, i) => {
         const wrap = document.createElement('div');
         wrap.className = 'card-wrap';
@@ -873,6 +874,7 @@
       });
 
       document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo(0, scrollY);
     }
     async function downloadCard(i) {
       const el = document.getElementById('card-' + i);
